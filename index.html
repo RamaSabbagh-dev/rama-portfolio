@@ -36,7 +36,8 @@
             focus on learning by building.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#projects">VIEW PROJECTS</a>
-            <a class="btn btn-outline" target="_blank" rel="noopener noreferrer" href="https://github.com/RamaSabbagh-dev">GITHUB -></a>
+            <a class="btn btn-outline" target="_blank" rel="noopener noreferrer"
+              href="https://github.com/RamaSabbagh-dev">GITHUB -></a>
           </div>
           <div class="hero-skills">
             <div><strong>HTML / CSS</strong><span>Front-end foundations</span></div>
@@ -96,39 +97,30 @@
             practical web and mobile applications.</p>
         </div>
 
-        <div class="featured-project reveal">
-          <div class="project-visual rstream-visual">
-            <div>
-              <h3>RSTREAM</h3>
-              <p>STREAMING APP / MOBILE + BACKEND</p>
+        <div class="project-workspace reveal">
+          <div class="featured-project">
+            <div class="project-visual rstream-visual">
+              <div>
+                <h3>RSTREAM</h3>
+                <p>STREAMING APP / MOBILE + BACKEND</p>
+              </div>
             </div>
+            <article class="project-info panel project-trigger" tabindex="0" role="button" aria-expanded="false"
+              data-project-id="rstream">
+              <p class="card-label">01</p>
+              <h3>RStream</h3>
+              <p>Streaming application project with a React Native front end and backend work around Node, Express and
+                Supabase.</p>
+              <strong>React Native / Node / Express / Supabase</strong>
+              <span class="project-link">VIEW DETAILS</span>
+            </article>
           </div>
-          <article class="project-info panel">
-            <p class="card-label">01</p>
-            <h3>RStream</h3>
-            <p>Streaming application project with a React Native front end and backend work around Node, Express and
-              Supabase.</p>
-            <strong>React Native / Node / Express / Supabase</strong>
-            <span class="project-link">CASE STUDY COMING SOON</span>
-          </article>
+
+          <div class="project-detail panel" id="projectDetail" aria-live="polite">
+          </div>
         </div>
 
-        <div class="project-grid">
-          <article class="project-card panel reveal">
-            <div class="project-thumb"></div>
-            <p class="card-label">02 / HTML / CSS / JAVASCRIPT</p>
-            <h3>Portfolio Website</h3>
-            <p>Personal portfolio built from scratch to practice responsive layout, interaction and front-end structure.
-            </p>
-          </article>
-          <article class="project-card panel reveal">
-            <div class="project-thumb"></div>
-            <p class="card-label">03 / WEB DEVELOPMENT</p>
-            <h3>Course Projects</h3>
-            <p>A curated group of smaller projects that show progress in JavaScript, APIs and practical problem solving.
-            </p>
-          </article>
-        </div>
+        <div class="project-grid" id="projectGrid" aria-label="Project list"></div>
       </section>
 
       <section class="content-section" id="skills">

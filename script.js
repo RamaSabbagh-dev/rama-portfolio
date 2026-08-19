@@ -1,6 +1,36 @@
 const menuButton = document.querySelector('.menu-toggle');
 const nav = document.querySelector('.nav');
 const revealElements = document.querySelectorAll('.reveal');
+const projectGrid = document.querySelector('#projectGrid');
+const projectDetail = document.querySelector('#projectDetail');
+let activeProjectId = '';
+
+const projects = [
+  {
+    id: 'rstream',
+    title: 'RStream',
+    category: 'Mobile + Backend',
+    stack: 'React Native / Node / Express / Supabase',
+    description: 'Streaming application project with a React Native front end and backend work around Node, Express and Supabase.',
+    link: ''
+  },
+  {
+    id: 'portfolio-website',
+    title: 'Portfolio Website',
+    category: 'HTML / CSS / JavaScript',
+    stack: 'HTML / CSS / JavaScript',
+    description: 'Personal portfolio built from scratch to practice responsive layout, interaction and front-end structure.',
+    link: ''
+  },
+  {
+    id: 'course-projects',
+    title: 'Course Projects',
+    category: 'Web Development',
+    stack: 'JavaScript / APIs / Problem Solving',
+    description: 'A curated group of smaller projects that show progress in JavaScript, APIs and practical problem solving.',
+    link: ''
+  }
+];
 
 menuButton?.addEventListener('click', () => {
   const isOpen = nav?.classList.toggle('is-open') ?? false;
@@ -29,4 +59,154 @@ if (!('IntersectionObserver' in window)) {
   }, { threshold: 0.12 });
 
   revealElements.forEach(el => observer.observe(el));
+}
+
+renderProjects();
+bindFeaturedProject();
+
+function renderProjects() {
+  if (!projectGrid) return;
+
+  const cardProjects = projects.filter(project => project.id !== 'rstream');
+
+  projectGrid.innerHTML = cardProjects.map((project, index) => `
+    <article class="project-card panel project-trigger" tabindex="0" role="button" aria-expanded="false" data-project-id="${escapeHtml(project.id)}">
+      <div class="project-thumb"></div>
+      <p class="card-label">${String(index + 2).padStart(2, '0')} / ${escapeHtml(project.category)}</p>
+      <h3>${escapeHtml(project.title)}</h3>
+      <p>${escapeHtml(project.description)}</p>
+      <span class="project-link">VIEW DETAILS</span>
+    </article>
+  `).join('');
+
+  projectGrid.querySelectorAll('.project-trigger').forEach(card => {
+    card.addEventListener('click', () => selectProject(card.dataset.projectId, card));
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        selectProject(card.dataset.projectId, card);
+      }
+    });
+  });
+}
+
+function bindFeaturedProject() {
+  const featuredProject = document.querySelector('[data-project-id="rstream"]');
+
+  featuredProject?.addEventListener('click', () => selectProject('rstream', featuredProject));
+  featuredProject?.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      selectProject('rstream', featuredProject);
+    }
+  });
+}
+
+function selectProject(projectId, selectedCard) {
+  const project = projects.find(item => item.id === projectId);
+
+  if (!project || !projectDetail || !selectedCard) return;
+
+  if (activeProjectId === projectId) {
+    closeProjectDetail();
+    return;
+  }
+
+  activeProjectId = projectId;
+
+  document.querySelectorAll('.project-trigger').forEach(card => {
+    const isActive = card.dataset.projectId === projectId;
+    card.classList.toggle('is-active', isActive);
+    card.setAttribute('aria-expanded', String(isActive));
+  });
+  updateProjectLabels(projectId);
+
+  moveProjectDetail(projectId, selectedCard);
+
+  projectDetail.classList.remove('is-changing');
+  void projectDetail.offsetWidth;
+  projectDetail.classList.add('is-open', 'is-changing');
+  projectDetail.innerHTML = `
+    <p class="card-label">${escapeHtml(project.category)}</p>
+    <h3>${escapeHtml(project.title)}</h3>
+    <p>${escapeHtml(project.description)}</p>
+    <strong class="detail-stack">${escapeHtml(project.stack)}</strong>
+    ${project.link ? `<a class="detail-link" href="${escapeAttribute(project.link)}" target="_blank" rel="noopener">OPEN PROJECT -></a>` : '<span class="detail-link">PROJECT LINK COMING SOON</span>'}
+  `;
+}
+
+function closeProjectDetail() {
+  if (!projectDetail) return;
+
+  activeProjectId = '';
+  projectDetail.classList.remove('is-open', 'is-changing');
+  projectDetail.innerHTML = '';
+
+  document.querySelectorAll('.project-trigger').forEach(card => {
+    card.classList.remove('is-active');
+    card.setAttribute('aria-expanded', 'false');
+  });
+  updateProjectLabels();
+}
+
+function moveProjectDetail(projectId, selectedCard) {
+  if (!projectDetail) return;
+
+  if (projectId === 'rstream') {
+    selectedCard.closest('.featured-project')?.after(projectDetail);
+    return;
+  }
+
+  if (!projectGrid) {
+    selectedCard.after(projectDetail);
+    return;
+  }
+
+  const cards = [...projectGrid.querySelectorAll('.project-trigger')];
+  const selectedIndex = cards.indexOf(selectedCard);
+
+  if (selectedIndex === -1) {
+    selectedCard.after(projectDetail);
+    return;
+  }
+
+  const columnCount = getProjectColumnCount();
+  const rowEndIndex = selectedIndex + (columnCount - 1 - (selectedIndex % columnCount));
+  const insertAfterCard = cards[Math.min(rowEndIndex, cards.length - 1)] ?? selectedCard;
+
+  insertAfterCard.after(projectDetail);
+}
+
+function getProjectColumnCount() {
+  if (!projectGrid) return 1;
+
+  const columns = getComputedStyle(projectGrid).gridTemplateColumns.trim().split(/\s+/);
+  return Math.max(columns.length, 1);
+}
+
+function updateProjectLabels(openProjectId = '') {
+  document.querySelectorAll('.project-trigger').forEach(card => {
+    const label = card.querySelector('.project-link');
+
+    if (label) {
+      label.textContent = card.dataset.projectId === openProjectId ? 'CLICK AGAIN TO CLOSE' : 'VIEW DETAILS';
+    }
+  });
+}
+
+function cleanField(value) {
+  return String(value ?? '').trim();
+}
+
+function escapeHtml(value) {
+  return cleanField(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replaceAll('`', '&#096;');
 }
