@@ -29,6 +29,14 @@ const projects = [
     stack: 'JavaScript / APIs / Problem Solving',
     description: 'A curated group of smaller projects that show progress in JavaScript, APIs and practical problem solving.',
     link: ''
+  },
+  {
+    id: 'innovative',
+    title: 'Innovative',
+    category: 'Web Development',
+    stack: 'HTML / CSS / JavaScript',
+    description: 'An AI information website with offline access, product pages, responsive design and a contact section.',
+    link: 'https://ramasabbagh-dev.github.io/Innovative/'
   }
 ];
 
@@ -62,42 +70,29 @@ if (!('IntersectionObserver' in window)) {
 }
 
 renderProjects();
-bindFeaturedProject();
 
 function renderProjects() {
   if (!projectGrid) return;
 
-  const cardProjects = projects.filter(project => project.id !== 'rstream');
-
-  projectGrid.innerHTML = cardProjects.map((project, index) => `
+  projectGrid.innerHTML = projects.map((project, index) => `
     <article class="project-card panel project-trigger" tabindex="0" role="button" aria-expanded="false" data-project-id="${escapeHtml(project.id)}">
       <div class="project-thumb"></div>
-      <p class="card-label">${String(index + 2).padStart(2, '0')} / ${escapeHtml(project.category)}</p>
+      <p class="card-label">${String(index + 1).padStart(2, '0')} / ${escapeHtml(project.category)}</p>
       <h3>${escapeHtml(project.title)}</h3>
       <p>${escapeHtml(project.description)}</p>
       <span class="project-link">VIEW DETAILS</span>
     </article>
   `).join('');
 
-  projectGrid.querySelectorAll('.project-trigger').forEach(card => {
-    card.addEventListener('click', () => selectProject(card.dataset.projectId, card));
-    card.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        selectProject(card.dataset.projectId, card);
-      }
-    });
-  });
+  projectGrid.querySelectorAll('.project-trigger').forEach(card => bindProjectCard(card));
 }
 
-function bindFeaturedProject() {
-  const featuredProject = document.querySelector('[data-project-id="rstream"]');
-
-  featuredProject?.addEventListener('click', () => selectProject('rstream', featuredProject));
-  featuredProject?.addEventListener('keydown', event => {
+function bindProjectCard(card) {
+  card.addEventListener('click', () => selectProject(card.dataset.projectId, card));
+  card.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      selectProject('rstream', featuredProject);
+      selectProject(card.dataset.projectId, card);
     }
   });
 }
@@ -151,11 +146,6 @@ function closeProjectDetail() {
 
 function moveProjectDetail(projectId, selectedCard) {
   if (!projectDetail) return;
-
-  if (projectId === 'rstream') {
-    selectedCard.closest('.featured-project')?.after(projectDetail);
-    return;
-  }
 
   if (!projectGrid) {
     selectedCard.after(projectDetail);
