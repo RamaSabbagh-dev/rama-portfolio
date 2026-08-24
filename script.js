@@ -35,6 +35,7 @@ const projects = [
     title: 'Innovative',
     category: 'Web Development',
     stack: 'HTML / CSS / JavaScript',
+    image: 'assets/Innovative.png',
     description: 'An AI information website with offline access, product pages, responsive design and a contact section.',
     link: 'https://ramasabbagh-dev.github.io/Innovative/'
   }
@@ -76,7 +77,9 @@ function renderProjects() {
 
   projectGrid.innerHTML = projects.map((project, index) => `
     <article class="project-card panel project-trigger" tabindex="0" role="button" aria-expanded="false" data-project-id="${escapeHtml(project.id)}">
-      <div class="project-thumb"></div>
+      <div class="project-thumb">
+        ${project.image ? `<img src="${escapeAttribute(project.image)}" alt="${escapeAttribute(project.title)} logo">` : ''}
+      </div>
       <p class="card-label">${String(index + 1).padStart(2, '0')} / ${escapeHtml(project.category)}</p>
       <h3>${escapeHtml(project.title)}</h3>
       <p>${escapeHtml(project.description)}</p>
