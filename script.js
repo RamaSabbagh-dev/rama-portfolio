@@ -3,6 +3,8 @@ const nav = document.querySelector('.nav');
 const revealElements = document.querySelectorAll('.reveal');
 const projectGrid = document.querySelector('#projectGrid');
 const projectDetail = document.querySelector('#projectDetail');
+const heroPhoto = document.querySelector('.hero-photo');
+const photoFrame = document.querySelector('.photo-frame');
 let activeProjectId = '';
 
 const projects = [
@@ -55,6 +57,10 @@ document.querySelectorAll('.nav a').forEach(link => {
   });
 });
 
+revealElements.forEach((element, index) => {
+  element.style.setProperty('--reveal-delay', `${Math.min(index * 45, 220)}ms`);
+});
+
 if (!('IntersectionObserver' in window)) {
   revealElements.forEach(el => el.classList.add('is-visible'));
 } else {
@@ -68,6 +74,22 @@ if (!('IntersectionObserver' in window)) {
   }, { threshold: 0.12 });
 
   revealElements.forEach(el => observer.observe(el));
+}
+
+if (heroPhoto && photoFrame && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+  heroPhoto.addEventListener('pointermove', event => {
+    const rect = heroPhoto.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 18;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 18;
+
+    photoFrame.style.setProperty('--photo-x', `${x}px`);
+    photoFrame.style.setProperty('--photo-y', `${y}px`);
+  });
+
+  heroPhoto.addEventListener('pointerleave', () => {
+    photoFrame.style.setProperty('--photo-x', '0px');
+    photoFrame.style.setProperty('--photo-y', '0px');
+  });
 }
 
 renderProjects();
@@ -92,12 +114,22 @@ function renderProjects() {
 
 function bindProjectCard(card) {
   card.addEventListener('click', () => selectProject(card.dataset.projectId, card));
+  card.addEventListener('pointermove', event => updateCardGlow(card, event));
   card.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       selectProject(card.dataset.projectId, card);
     }
   });
+}
+
+function updateCardGlow(card, event) {
+  const rect = card.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 100;
+  const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+  card.style.setProperty('--card-x', `${x}%`);
+  card.style.setProperty('--card-y', `${y}%`);
 }
 
 function selectProject(projectId, selectedCard) {
