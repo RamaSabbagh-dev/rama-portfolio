@@ -12,10 +12,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css" />
+  <script src="projects.js" defer></script>
   <script src="script.js" defer></script>
 </head>
 
 <body>
+  <div class="scroll-progress" aria-hidden="true"></div>
   <div class="site-shell">
     <header class="topbar" id="top">
       <a class="brand" href="#top">
@@ -34,7 +36,7 @@
 
     <main>
       <section class="hero section-pad">
-        <div class="hero-copy reveal">
+        <div class="hero-copy">
           <p class="eyebrow">SOFTWARE DEVELOPMENT STUDENT / NETHERLANDS</p>
           <h1 class="hero-title">
             <span>SOFTWARE</span>
@@ -54,7 +56,7 @@
           </div>
         </div>
 
-        <div class="hero-photo reveal">
+        <div class="hero-photo">
           <div class="photo-glow"></div>
           <div class="photo-frame">
             <img src="assets/rama.photo.png" alt="Portrait of Rama Sabbagh" />
@@ -212,6 +214,8 @@
     <footer class="footer">
       <span>RAMA SABBAGH / SOFTWARE DEVELOPER</span>
     </footer>
+
+    <button class="to-top" type="button" aria-label="Back to top">&uarr;</button>
   </div>
 </body>
 

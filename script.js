@@ -6,42 +6,9 @@ const projectDetail = document.querySelector('#projectDetail');
 const heroPhoto = document.querySelector('.hero-photo');
 const photoFrame = document.querySelector('.photo-frame');
 let activeProjectId = '';
+let projects = [];
 
-const projects = [
-  {
-    id: 'rstream',
-    title: 'RStream',
-    category: 'Mobile + Backend',
-    stack: 'React Native / Node / Express / Supabase',
-    description: 'Streaming application project with a React Native front end and backend work around Node, Express and Supabase.',
-    link: ''
-  },
-  {
-    id: 'portfolio-website',
-    title: 'Portfolio Website',
-    category: 'HTML / CSS / JavaScript',
-    stack: 'HTML / CSS / JavaScript',
-    description: 'Personal portfolio built from scratch to practice responsive layout, interaction and front-end structure.',
-    link: ''
-  },
-  {
-    id: 'course-projects',
-    title: 'Course Projects',
-    category: 'Web Development',
-    stack: 'JavaScript / APIs / Problem Solving',
-    description: 'A curated group of smaller projects that show progress in JavaScript, APIs and practical problem solving.',
-    link: ''
-  },
-  {
-    id: 'innovative',
-    title: 'Innovative',
-    category: 'Web Development',
-    stack: 'HTML / CSS / JavaScript',
-    image: 'assets/Innovative.png',
-    description: 'An AI information website with offline access, product pages, responsive design and a contact section.',
-    link: 'https://ramasabbagh-dev.github.io/Innovative/'
-  }
-];
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 menuButton?.addEventListener('click', () => {
   const isOpen = nav?.classList.toggle('is-open') ?? false;
@@ -61,19 +28,29 @@ revealElements.forEach((element, index) => {
   element.style.setProperty('--reveal-delay', `${Math.min(index * 45, 220)}ms`);
 });
 
+let revealObserver = null;
+
 if (!('IntersectionObserver' in window)) {
   revealElements.forEach(el => el.classList.add('is-visible'));
 } else {
-  const observer = new IntersectionObserver(entries => {
+  revealObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
+        revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12 });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
 
-  revealElements.forEach(el => observer.observe(el));
+  revealElements.forEach(el => revealObserver.observe(el));
+}
+
+function revealOnScroll(element) {
+  if (revealObserver) {
+    revealObserver.observe(element);
+  } else {
+    element.classList.add('is-visible');
+  }
 }
 
 if (heroPhoto && photoFrame && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
@@ -92,13 +69,27 @@ if (heroPhoto && photoFrame && window.matchMedia('(prefers-reduced-motion: no-pr
   });
 }
 
-renderProjects();
+loadProjects();
+
+function loadProjects() {
+  if (!projectGrid) return;
+
+  projects = Array.isArray(window.PROJECTS) ? window.PROJECTS : [];
+
+  if (!projects.length) {
+    console.error('No project data found. Is projects.js loaded before script.js?');
+    projectGrid.innerHTML = '<p class="card-label">Projects could not be loaded right now.</p>';
+    return;
+  }
+
+  renderProjects();
+}
 
 function renderProjects() {
   if (!projectGrid) return;
 
   projectGrid.innerHTML = projects.map((project, index) => `
-    <article class="project-card panel project-trigger" tabindex="0" role="button" aria-expanded="false" data-project-id="${escapeHtml(project.id)}">
+    <article class="project-card panel project-trigger reveal" tabindex="0" role="button" aria-expanded="false" data-project-id="${escapeHtml(project.id)}">
       <div class="project-thumb">
         ${project.image ? `<img src="${escapeAttribute(project.image)}" alt="${escapeAttribute(project.title)} logo">` : ''}
       </div>
@@ -109,12 +100,20 @@ function renderProjects() {
     </article>
   `).join('');
 
-  projectGrid.querySelectorAll('.project-trigger').forEach(card => bindProjectCard(card));
+  projectGrid.querySelectorAll('.project-trigger').forEach((card, index) => {
+    card.style.setProperty('--reveal-delay', `${Math.min(index * 70, 260)}ms`);
+    bindProjectCard(card);
+    revealOnScroll(card);
+  });
+
+  // Page height just changed; refresh scroll-driven UI once listeners are wired.
+  requestAnimationFrame(() => window.dispatchEvent(new Event('scroll')));
 }
 
 function bindProjectCard(card) {
   card.addEventListener('click', () => selectProject(card.dataset.projectId, card));
   card.addEventListener('pointermove', event => updateCardGlow(card, event));
+  card.addEventListener('pointerleave', () => resetCardTilt(card));
   card.addEventListener('keydown', event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -125,11 +124,21 @@ function bindProjectCard(card) {
 
 function updateCardGlow(card, event) {
   const rect = card.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / rect.width) * 100;
-  const y = ((event.clientY - rect.top) / rect.height) * 100;
+  const relX = (event.clientX - rect.left) / rect.width;
+  const relY = (event.clientY - rect.top) / rect.height;
 
-  card.style.setProperty('--card-x', `${x}%`);
-  card.style.setProperty('--card-y', `${y}%`);
+  card.style.setProperty('--card-x', `${relX * 100}%`);
+  card.style.setProperty('--card-y', `${relY * 100}%`);
+
+  if (!prefersReducedMotion && event.pointerType !== 'touch') {
+    card.style.setProperty('--tilt-x', `${(0.5 - relY) * 6}deg`);
+    card.style.setProperty('--tilt-y', `${(relX - 0.5) * 6}deg`);
+  }
+}
+
+function resetCardTilt(card) {
+  card.style.setProperty('--tilt-x', '0deg');
+  card.style.setProperty('--tilt-y', '0deg');
 }
 
 function selectProject(projectId, selectedCard) {
@@ -235,3 +244,63 @@ function escapeHtml(value) {
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll('`', '&#096;');
 }
+
+/* ---------------------------------------------------------
+   Scroll UI: progress bar, active nav, parallax, back-to-top
+   --------------------------------------------------------- */
+
+const scrollProgress = document.querySelector('.scroll-progress');
+const toTopButton = document.querySelector('.to-top');
+const navLinks = [...document.querySelectorAll('.nav a[href^="#"]')];
+const sectionTargets = navLinks
+  .map(link => document.querySelector(link.getAttribute('href')))
+  .filter(Boolean);
+
+let scrollTicking = false;
+
+function onScrollFrame() {
+  const scrollTop = window.scrollY;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = maxScroll > 0 ? Math.min(scrollTop / maxScroll, 1) : 0;
+
+  if (scrollProgress) {
+    scrollProgress.style.transform = `scaleX(${progress})`;
+  }
+
+  if (toTopButton) {
+    toTopButton.classList.toggle('is-visible', scrollTop > 620);
+  }
+
+  if (!prefersReducedMotion) {
+    document.body.style.setProperty('--scroll-y', String(scrollTop));
+  }
+
+  if (sectionTargets.length) {
+    const marker = scrollTop + window.innerHeight * 0.34;
+    let currentId = sectionTargets[0].id;
+
+    sectionTargets.forEach(section => {
+      if (section.offsetTop <= marker) currentId = section.id;
+    });
+
+    navLinks.forEach(link => {
+      link.classList.toggle('is-active', link.getAttribute('href') === `#${currentId}`);
+    });
+  }
+
+  scrollTicking = false;
+}
+
+function requestScrollFrame() {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(onScrollFrame);
+}
+
+window.addEventListener('scroll', requestScrollFrame, { passive: true });
+window.addEventListener('resize', requestScrollFrame);
+requestScrollFrame();
+
+toTopButton?.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+});

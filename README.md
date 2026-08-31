@@ -63,6 +63,8 @@ portfolio/
 ├── index.html
 ├── style.css
 ├── script.js
+├── projects.js
+
 ├── assets/
 │   └── images/
 └── README.md
