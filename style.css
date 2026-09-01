@@ -1,4 +1,8 @@
 :root {
+  /* The site ships a single dark theme. Declaring it stops browser
+     "auto dark mode" from re-inverting an already-dark page (which
+     wiped out the gradient-clipped hero title). */
+  color-scheme: dark;
   --bg: #09090e;
   --panel: #110f16;
   --panel-2: #16131b;
@@ -239,16 +243,32 @@ textarea {
 
 .hero-title span {
   display: block;
+  /* Solid fallback: stays readable if the gradient fill is ever
+     stripped (forced dark mode, unsupported background-clip, etc.). */
+  color: var(--text);
   background: linear-gradient(100deg, var(--text) 0 38%, #ffd7ec 48%, var(--text) 58% 100%);
   background-size: 240% 100%;
   background-position: 120% 0;
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
   text-shadow: 0 0 34px rgba(199, 122, 168, .08);
   animation:
     titleSlideUp .85s cubic-bezier(.2, .8, .2, 1) both,
     titleShine 3.8s ease-in-out 1.1s infinite;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-title span {
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+@media (forced-colors: active) {
+  .hero-title span {
+    background: none;
+    -webkit-text-fill-color: CanvasText;
+    color: CanvasText;
+  }
 }
 
 .hero-title span:nth-child(2) {
