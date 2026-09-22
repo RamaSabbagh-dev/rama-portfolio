@@ -169,8 +169,9 @@ function selectProject(projectId, selectedCard) {
     <p class="card-label">${escapeHtml(project.category)}</p>
     <h3>${escapeHtml(project.title)}</h3>
     <p>${escapeHtml(project.description)}</p>
+    ${Array.isArray(project.details) ? project.details.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('') : ''}
     <strong class="detail-stack">${escapeHtml(project.stack)}</strong>
-    ${project.link ? `<a class="detail-link" href="${escapeAttribute(project.link)}" target="_blank" rel="noopener">OPEN PROJECT -></a>` : '<span class="detail-link">PROJECT LINK COMING SOON</span>'}
+    ${project.link ? `<a class="detail-link" href="${escapeAttribute(project.link)}" target="_blank" rel="noopener">OPEN PROJECT -></a>` : `<span class="detail-link">${escapeHtml(project.noLinkLabel || 'PROJECT LINK COMING SOON')}</span>`}
   `;
 }
 
